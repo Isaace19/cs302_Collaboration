@@ -1,0 +1,2 @@
+build process on cmdline
+g++ -Wall -Wextra -std=c++11 -o lib_info lib_info.cpp      
