@@ -97,14 +97,10 @@ void process_values(const std::string &line, std::map<std::string, Artist> &libr
 
 // create a seperate function that can traverse the library structure that we made and inserted values into
 void print_library(const std::map<std::string, Artist> &library) {
-    for (const auto &artist_pair : library) {
-        const Artist &artist = artist_pair.second;
-        std::cout << artist.name << std::endl;
-        for (const auto &album_pair : artist.albums) {
-            const Album &album = album_pair.second;
-            std::cout << "\t" << album.name << std::endl;
-        }
-    }
+   // change to iterator format
+   for(std::map<std::string, Artist>::const_iterator art_it = library.begin(); art_it != library.end(); ++art_it){
+   		std::cout << art_it->first << ": " << art_it->second.nsongs << ", ";
+   }    
 }
 
 
