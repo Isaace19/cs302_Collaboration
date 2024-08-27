@@ -1,2 +1,6 @@
-build process on cmdline
-g++ -Wall -Wextra -std=c++11 -o lib_info lib_info.cpp      
+COSC302 Project #1 Write-up
+1. Isaac Abella, John Cordwell III
+2. Isaace19, jcordwel3
+3. https://github.com/Isaace19/cs302_Collaboration
+4. g++ -Wall -Wextra -std=c++11 -o lib_info lib_info.cpp  
+5. Summary
