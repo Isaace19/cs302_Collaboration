@@ -18,11 +18,38 @@ struct List {
     List(); 					// define in list.cpp
     ~List();					// define in list.cpp
 
-  //    void push_front(const std::string &s);	//define below
+  void push_front(const std::string &s);	//define below
 };
 
-
 // Functions -------------------------------------------------------------------
+
+
+void List::push_front(const std::string &s){
+	
+	int number = 0;
+	// convert the string into int
+	try{
+		number = std::stoi(s); // convert string to integer
+	}catch (const std::invalid_arguments& e){
+		// handles invalid input
+		// .what() is apart of invalid arg  
+		std::cerr << "Invalid input " << e.what()  << '\n';
+	}catch (const std::out_of_range& e){
+		// handle out of range errors 
+		std::cerr << "Invalid input " << e.what() << '\n';
+	}
+		
+	Node * newNode = new Node();
+	newNode->string = s; // assign string
+	newNode->number = num; // assign integer
+	newNode->next = head;
+
+	head = newNode;
+	size++;
+}
+
+
+
 
 bool node_number_compare(const Node *a, const Node *b); 	//implement in list.cpp to avoid compile-time issues, used by quick, merge and stl
 bool node_string_compare(const Node *a, const Node *b);		//implement in list.cpp to avoid compile-time issues, merge and stl
