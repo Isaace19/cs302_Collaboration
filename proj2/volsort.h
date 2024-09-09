@@ -48,8 +48,15 @@ void List::push_front(const std::string &s){
 	size++;
 }
 
-
-
+void List::size(){
+	size_t size = 0;
+	Node current_node = head;
+	while(current_node != NULL){
+		current_node = current_node.next;
+		size++;
+	}
+	return size;
+}
 
 bool node_number_compare(const Node *a, const Node *b); 	//implement in list.cpp to avoid compile-time issues, used by quick, merge and stl
 bool node_string_compare(const Node *a, const Node *b);		//implement in list.cpp to avoid compile-time issues, merge and stl
