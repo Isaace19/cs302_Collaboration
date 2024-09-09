@@ -4,68 +4,43 @@
 #define VOLSORT_H
 
 #include <string>
+#include <stdexcept>
+#include <iostream>
 
-struct Node {
+struct Node
+{
     std::string string;
-    int         number;
-    Node       *next;
+    int number;
+    Node *next;
 };
 
-struct List {
-    Node       *head;
-    size_t      size;
+struct List
+{
+    Node *head;
+    size_t size;
 
-    List(); 					// define in list.cpp
-    ~List();					// define in list.cpp
+    List();  // define in list.cpp --> DONE
+    ~List(); // define in list.cpp
 
-  void push_front(const std::string &s);	//define below
+    void push_front(const std::string &s); // define below
+
+    // To get the number value for the new struct Node,
+    // you should use the std::stoi function (if this conversion fails,
+    // you can default to 0 for the number value).
 };
 
 // Functions -------------------------------------------------------------------
 
+bool node_number_compare(const Node *a, const Node *b); // implement in list.cpp to avoid compile-time issues, used by quick, merge and stl
+bool node_string_compare(const Node *a, const Node *b); // implement in list.cpp to avoid compile-time issues, merge and stl
 
-void List::push_front(const std::string &s){
-	
-	int number = 0;
-	// convert the string into int
-	try{
-		number = std::stoi(s); // convert string to integer
-	}catch (const std::invalid_arguments& e){
-		// handles invalid input
-		// .what() is apart of invalid arg  
-		std::cerr << "Invalid input " << e.what()  << '\n';
-	}catch (const std::out_of_range& e){
-		// handle out of range errors 
-		std::cerr << "Invalid input " << e.what() << '\n';
-	}
-		
-	Node * newNode = new Node();
-	newNode->string = s; // assign string
-	newNode->number = num; // assign integer
-	newNode->next = head;
+// create comparator function because return ints instead;
+int qsort_number_compare(const void *a, const void *b); // implement in list.cpp to avoid compile-time issues, used by quick, merge and stl
+int qsort_string_compare(const void *a, const void *b); // implement in list.cpp to avoid compile-time issues, merge and stl
 
-	head = newNode;
-	size++;
-}
-
-void List::size(){
-	size_t size = 0;
-	Node current_node = head;
-	while(current_node != NULL){
-		current_node = current_node.next;
-		size++;
-	}
-	return size;
-}
-
-bool node_number_compare(const Node *a, const Node *b); 	//implement in list.cpp to avoid compile-time issues, used by quick, merge and stl
-bool node_string_compare(const Node *a, const Node *b);		//implement in list.cpp to avoid compile-time issues, merge and stl
-
-void dump_node(Node *n);					// implement in this file (volsort.h) to make it easier for TAs to grade
-
-void stl_sort(List &l, bool numeric);	// define in stl.cpp - sort using std::sort
-void qsort_sort(List &l, bool numeric);	// define in qsort.cpp - sort using qsort from cstdlib
-void merge_sort(List &l, bool numeric);	// define in merge.cpp - your implementation
-void quick_sort(List &l, bool numeric);	// define in quick.cpp - your implementation
+void stl_sort(List &l, bool numeric);   // define in stl.cpp - sort using std::sort
+void qsort_sort(List &l, bool numeric); // define in qsort.cpp - sort using qsort from cstdlib
+void merge_sort(List &l, bool numeric); // define in merge.cpp - your implementation
+void quick_sort(List &l, bool numeric); // define in quick.cpp - your implementation
 
 #endif
