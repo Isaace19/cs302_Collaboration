@@ -3,8 +3,9 @@
 #include "volsort.h"
 
 #include <algorithm>
-#include <vector>
+#include <iostream>
 #include <string>
+#include <vector>
 #include <cstdlib>
 
 void stl_sort(List &l, bool numeric)
@@ -14,11 +15,14 @@ void stl_sort(List &l, bool numeric)
     // create an array for copy the linked list into
     std::vector<Node *> nodes;
     Node *curr = l.head;
+    int counter = 1;
     while (curr != NULL)
     {
         nodes.push_back(curr);
         curr = curr->next;
+        counter = counter + 1;
     }
+
     if (numeric)
     {
         std::sort(nodes.begin(), nodes.end(), node_number_compare);
@@ -29,10 +33,10 @@ void stl_sort(List &l, bool numeric)
     }
     // relink our linked list:
     l.head = nodes[0];
-    for (int i = 0; i < nodes.size() - 1; ++i)
+    for (int i = 0; i < counter - 1; ++i)
     {
         nodes[i]->next = nodes[i + 1];
-        if (i == nodes.size() - 1)
+        if (i == counter - 1)
         {
             nodes[i + 1]->next = NULL;
         }

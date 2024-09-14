@@ -31,12 +31,10 @@ struct List
 
 // Functions -------------------------------------------------------------------
 
+void dump_node(Node *n);
+
 bool node_number_compare(const Node *a, const Node *b); // implement in list.cpp to avoid compile-time issues, used by quick, merge and stl
 bool node_string_compare(const Node *a, const Node *b); // implement in list.cpp to avoid compile-time issues, merge and stl
-
-// create comparator function because return ints instead;
-int qsort_number_compare(const void *a, const void *b); // implement in list.cpp to avoid compile-time issues, used by quick, merge and stl
-int qsort_string_compare(const void *a, const void *b); // implement in list.cpp to avoid compile-time issues, merge and stl
 
 void stl_sort(List &l, bool numeric);   // define in stl.cpp - sort using std::sort
 void qsort_sort(List &l, bool numeric); // define in qsort.cpp - sort using qsort from cstdlib
