@@ -1,7 +1,7 @@
 #include "volsort.h"
 
-#include<stdexcept>
-#include<string>
+#include <stdexcept>
+#include <string>
 List::List()
 {
     head = NULL;
@@ -51,37 +51,22 @@ void List::push_front(const std::string &s)
     size++;
 }
 
-void dump_node(Node *n) // implement in this file (volsort.h) to make it easier for TAs to grade
+void dump_node(Node *n)
 {
-    while (n != NULL)
+    while (n != nullptr)
     {
-		std::cout << "Node(string) " << n->string << ", number: " << n->number << ")\n";
-		n = n->next;
+        std::cout << "Node(string: " << n->string << ", number: " << n->number << ")\n";
+        n = n->next;
     }
-};
+}
 
 // implement node num compare and string compare
 bool node_number_compare(const Node *a, const Node *b)
 {
-    if (a->string == b->string)
-    {
-        return (true);
-    }
-    else
-    {
-        return (false);
-    }
+   return a->number < b->number; 
 }
 
 bool node_string_compare(const Node *a, const Node *b)
 {
-    if (a->number == b->number)
-    {
-        return (true);
-    }
-    else
-    {
-        return (false);
-    }
+	return a->string < b->string;
 }
-
