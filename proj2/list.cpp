@@ -11,13 +11,13 @@ List::List()
 List::~List()
 {
     Node *curr = head;
-    while (curr != 0)
+    while (curr != NULL)
     {
         Node *next = curr->next;
-        delete next;
+        delete curr;
         curr = next;
     }
-    head = 0;
+    head = NULL;
 }
 
 void List::push_front(const std::string &s)
@@ -29,17 +29,13 @@ void List::push_front(const std::string &s)
     {
         number = std::stoi(s); // convert string to integer
     }
-
-    // invliad input catch exceptions
-    catch (const std::invalid_argument &e)
+	catch (const std::invalid_argument &e)
     {
-        // handle weight chars in input stream
-        std::cerr << "Invalid input " << e.what() << '\n';
+		number = 0; // default to 0 if the conversion fails
     }
     catch (const std::out_of_range &e)
     {
-        // handle out of range errors
-        std::cerr << "Invalid input " << e.what() << '\n';
+		number = 0; // default to 0 if the conversion fails
     }
 
     Node *newNode = new Node();
@@ -48,7 +44,7 @@ void List::push_front(const std::string &s)
     newNode->next = head;
 
     head = newNode;
-    size++;
+    ++size;
 }
 
 void dump_node(Node *n)
@@ -70,3 +66,4 @@ bool node_string_compare(const Node *a, const Node *b)
 {
 	return a->string < b->string;
 }
+
