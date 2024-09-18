@@ -34,30 +34,31 @@ Node *qsort(Node *head, bool numeric)
     partition(head->next, pivot, left, right, numeric);
     left = qsort(left, numeric);
     right = qsort(right, numeric);
-    
-    if(left == NULL)
+
+    // logic checks if left or right sublists are empty. if so, connect the pivot to the left or right to make concatenation work
+    if (left == NULL)
     {
-      pivot->next = right;
-      return pivot;
+        pivot->next = right;
+        return pivot;
     }
     else
     {
-      Node *TempLeft = left;
-      while (TempLeft->next != NULL)
-      {
-        TempLeft = TempLeft->next;
-      }
-      pivot->next = NULL;
-      TempLeft->next = pivot;
+        Node *TempLeft = left;
+        while (TempLeft->next != NULL)
+        {
+            TempLeft = TempLeft->next;
+        }
+        pivot->next = NULL;
+        TempLeft->next = pivot;
     }
 
-    
-    // concatenate the two sides back together
+    // concatenate the two sides back together - Returns the new head of the list
     return concatenate(left, right);
 }
 
 void partition(Node *head, Node *pivot, Node *&left, Node *&right, bool numeric)
 {
+    // pointers track the end of the left and right sublists
     Node *less_than = NULL;
     Node *great_than = NULL;
     left = NULL;
@@ -66,6 +67,8 @@ void partition(Node *head, Node *pivot, Node *&left, Node *&right, bool numeric)
     while (head)
     {
         Node *nextNode = head->next; // save before modifying our head
+
+        // sort based on if the numeric flag is true or false
         bool compare_result;
         if (numeric)
         {
@@ -76,6 +79,7 @@ void partition(Node *head, Node *pivot, Node *&left, Node *&right, bool numeric)
             compare_result = node_string_compare(pivot, head);
         }
 
+        // if the value is less than our pivot, add to the left sublist
         if (!compare_result)
         {
             if (left == NULL)
@@ -89,6 +93,7 @@ void partition(Node *head, Node *pivot, Node *&left, Node *&right, bool numeric)
                 less_than = head;
             }
         }
+        // else, if the value is greater than our pivot, add to the right sublist
         else
         {
             if (right == NULL)
@@ -102,16 +107,17 @@ void partition(Node *head, Node *pivot, Node *&left, Node *&right, bool numeric)
                 great_than = head;
             }
         }
+        // disconnect node from list, moves to next node
         head->next = NULL;
         head = nextNode;
     }
 
-    // ensure tail is pointing to a nullptr
+    // ensure tail is pointing to a nullptr for both left and right sublists
     if (less_than != NULL)
     {
         less_than->next = NULL;
     }
-    if ( great_than != NULL)
+    if (great_than != NULL)
     {
         great_than->next = NULL;
     }

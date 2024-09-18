@@ -8,6 +8,7 @@ List::List()
     size = 0;
 }
 
+// Proper Deconstructor call, deletes current node to prevent bad memory access.
 List::~List()
 {
     Node *curr = head;
@@ -22,31 +23,34 @@ List::~List()
 
 void List::push_front(const std::string &s)
 {
-
     int number = 0;
-    // convert the string into int
     try
     {
         number = std::stoi(s); // convert string to integer
     }
-	catch (const std::invalid_argument &e)
+    catch (const std::invalid_argument &e)
     {
-		number = 0; // default to 0 if the conversion fails
+        number = 0;
     }
     catch (const std::out_of_range &e)
     {
-		number = 0; // default to 0 if the conversion fails
+        number = 0;
     }
+    // removed the error checking with e.what() since there is no explicitly bad input.
+    // However should there be bad conversion, default to number = 0
 
+    // assign node string and integer for both regular string sort and numeric flag sorting
     Node *newNode = new Node();
-    newNode->string = s;      // assign string
-    newNode->number = number; // assign integer
+    newNode->string = s;
+    newNode->number = number;
     newNode->next = head;
 
     head = newNode;
     ++size;
 }
 
+// Dump node is used for error checking throughout the code. Can be inserted and called as dump_node(l.head)
+// Gives the list as it comes in before sorting and than you can call again to get list after sorting
 void dump_node(Node *n)
 {
     while (n != nullptr)
@@ -56,14 +60,13 @@ void dump_node(Node *n)
     }
 }
 
-// implement node num compare and string compare
+// C++ style pointer comparisions
 bool node_number_compare(const Node *a, const Node *b)
 {
-   return a->number < b->number; 
+    return a->number < b->number;
 }
 
 bool node_string_compare(const Node *a, const Node *b)
 {
-	return a->string < b->string;
+    return a->string < b->string;
 }
-
