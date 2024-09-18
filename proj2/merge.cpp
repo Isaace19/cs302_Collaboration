@@ -2,37 +2,43 @@
 
 #include "volsort.h"
 
+#include <iostream>
+
 // Prototypes
 
 Node *msort(Node *head, bool numeric);
-void split(Node *head, Node *&left, Node *&right);
+void  split(Node *head, Node *&left, Node *&right);
 Node *merge(Node *left, Node *right, bool numeric);
 
 // Implementations
 
-void merge_sort(List &l, bool numeric)
+void merge_sort(List &l, bool numeric) //wrapper function calls all the below funtions
 {
-    // should just start the sorting process calling qsort
-    l.head = msort(l.head, numeric);
+    Node *head = l.head;
+        l.head = msort(head, numeric);
 }
 
-Node *msort(Node *head, bool numeric)
+Node *msort(Node *head, bool numeric) //recursive function, split(divide), merge(conquer)
 {
-    if (head == NULL || head->next == NULL)
-    {
-        return head;
-    }
-    Node *left = NULL;
-    Node *right = NULL;
+        // pseudocode
+        if(head == NULL || head->next == NULL)
+        {
+            return head;
+        }
+        // partition list
+        Node *left = NULL;
+        Node *right = NULL;
 
-    split(head->next, left, right);
-    left = msort(left, numeric);
-    right = msort(right, numeric);
+        split(head, *&left, *&right);
+        left = msort(left, numeric);
+        right = msort(right, numeric);
 
-    return merge(left, right, numeric);
+        // concatenate the two sides back together
+        return merge(left, right, numeric);
+
 }
 
-void split(Node *head, Node *&left, Node *&right)
+void split(Node *head, Node *&left, Node *&right) //splits the linked list in half with the slow/faster pointer trick
 {
     if (head == NULL || head->next == NULL)
     {
@@ -41,11 +47,11 @@ void split(Node *head, Node *&left, Node *&right)
         return;
     }
 
-    Node *fast = head;
+    Node *fast = head->next;
     Node *slow = head;
 
     // finding the midpoint via fast and slow pointers
-    while (fast->next->next != NULL)
+    while (fast != NULL && fast->next != NULL)
     {
         fast = fast->next->next;
         slow = slow->next;
@@ -55,53 +61,65 @@ void split(Node *head, Node *&left, Node *&right)
     slow->next = NULL;
 }
 
-Node *merge(Node *left, Node *right, bool numeric)
+Node *merge(Node *left, Node *right, bool numeric) //combines left and right lists
 {
-    Node *newhead = NULL;
-    Node *NHTemp = NULL;
-    Node *LTemp = left;
-    Node *RTemp = right;
-    while (LTemp != NULL && RTemp != NULL)
+   Node* newhead = NULL;
+   Node* NHTemp = NULL;
+
+    // Compare and merge nodes
+    while (left != NULL && right != NULL)
     {
-        bool numcheck;
-        if (numeric)
+      bool numcheck;
+      if (numeric) 
+      {
+        numcheck = node_number_compare(left, right);
+      }
+      else
+      {
+        numcheck = node_string_compare(left, right);
+      }
+      if (numcheck)
+      {
+        if (newhead == NULL)
         {
-            numcheck = node_number_compare(LTemp, RTemp);
+          newhead = left;
+          NHTemp = newhead;
         }
         else
         {
-            numcheck = node_string_compare(LTemp, RTemp);
+          NHTemp->next = left;
+          NHTemp = NHTemp->next;
         }
-        if (numcheck)
+            left = left->next;
+       }
+       else
+       {
+        if (newhead == NULL)
         {
-            if (newhead == NULL)
-            {
-                newhead = LTemp;
-                NHTemp = newhead;
-                LTemp = LTemp->next;
-            }
-            else
-            {
-                NHTemp->next = LTemp;
-                NHTemp = NHTemp->next;
-                LTemp = LTemp->next;
-            }
+          newhead = right;
+          NHTemp = newhead;
         }
         else
         {
-            if (newhead == NULL)
-            {
-                newhead = RTemp;
-                NHTemp = newhead;
-                RTemp = RTemp->next;
-            }
-            else
-            {
-                NHTemp->next = RTemp;
-                NHTemp = NHTemp->next;
-                RTemp = RTemp->next;
-            }
+          NHTemp->next = right;
+          NHTemp = NHTemp->next;
         }
+          right = right->next;
+       }
     }
-    return (newhead);
+    if(NHTemp->next != NULL)
+    {
+      NHTemp->next = NULL;
+    }
+    // Attach remaining nodes
+    if (left != NULL)
+    {
+      NHTemp->next = left;
+    }
+    else if (right != NULL)
+    {
+        NHTemp->next = right;
+    }
+
+    return newhead;
 }

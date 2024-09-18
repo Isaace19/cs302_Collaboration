@@ -14,15 +14,8 @@ Node *concatenate(Node *left, Node *right);
 
 void quick_sort(List &l, bool numeric)
 {
-    // should just start the sorting process calling qsort
-    if (numeric)
-    {
-        l.head = qsort(l.head, &node_number_compare);
-    }
-    else
-    {
-        l.head = qsort(l.head, &node_string_compare);
-    }
+    Node *head = l.head;
+    l.head = qsort(head, numeric);
 }
 
 Node *qsort(Node *head, bool numeric)
@@ -41,7 +34,24 @@ Node *qsort(Node *head, bool numeric)
     partition(head->next, pivot, left, right, numeric);
     left = qsort(left, numeric);
     right = qsort(right, numeric);
+    
+    if(left == NULL)
+    {
+      pivot->next = right;
+      return pivot;
+    }
+    else
+    {
+      Node *TempLeft = left;
+      while (TempLeft->next != NULL)
+      {
+        TempLeft = TempLeft->next;
+      }
+      pivot->next = NULL;
+      TempLeft->next = pivot;
+    }
 
+    
     // concatenate the two sides back together
     return concatenate(left, right);
 }
@@ -59,20 +69,16 @@ void partition(Node *head, Node *pivot, Node *&left, Node *&right, bool numeric)
         bool compare_result;
         if (numeric)
         {
-            // convert string to number and compare
-            int pivot_val = (pivot->number);
-            int node_val = (head->number);
-            compare_result = (node_val < pivot_val);
+            compare_result = node_number_compare(pivot, head);
         }
         else
         {
-            // string compare -- uses list value directly if numeric is false.
-            compare_result = (head->string < pivot->string);
+            compare_result = node_string_compare(pivot, head);
         }
 
-        if (compare_result)
+        if (!compare_result)
         {
-            if (!left)
+            if (left == NULL)
             {
                 left = head;
                 less_than = head;
@@ -85,7 +91,7 @@ void partition(Node *head, Node *pivot, Node *&left, Node *&right, bool numeric)
         }
         else
         {
-            if (!right)
+            if (right == NULL)
             {
                 right = head;
                 great_than = right;
@@ -101,11 +107,11 @@ void partition(Node *head, Node *pivot, Node *&left, Node *&right, bool numeric)
     }
 
     // ensure tail is pointing to a nullptr
-    if (less_than)
+    if (less_than != NULL)
     {
         less_than->next = NULL;
     }
-    if (great_than)
+    if ( great_than != NULL)
     {
         great_than->next = NULL;
     }

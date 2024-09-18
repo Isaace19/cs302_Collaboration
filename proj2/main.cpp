@@ -3,7 +3,7 @@
 #include "volsort.h"
 
 #include <iostream>
-
+#include <chrono>
 #include <strings.h>
 #include <unistd.h>
 #include <cstdlib>
@@ -60,6 +60,10 @@ void parse_command_line_options(int argc, char *argv[], int &mode, bool &numeric
 // Main execution --------------------------------------------------------------
 
 int main(int argc, char *argv[]) {
+   //stuff added to main
+   //auto start = std::chrono::high_resolution_clock::now();
+
+   //***********
     int mode = MODE_STL;
     bool numeric = false;
     List data;
@@ -85,6 +89,7 @@ int main(int argc, char *argv[]) {
             quick_sort(data, numeric);
             break;
     }
+    
 
     for (Node * curr = data.head; curr != NULL; curr = curr->next) {
         if (numeric) {
@@ -94,6 +99,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    //stuff added to main
+    //auto end = std::chrono::high_resolution_clock::now();
+    //std::chrono::duration<double> duration = end - start;
+    //std::cout << "Time taken: " << duration.count() << " seconds" << std::endl;
+    //*************************
 
     return 0;
 }

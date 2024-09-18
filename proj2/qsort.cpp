@@ -3,7 +3,7 @@
 #include "volsort.h"
 
 #include <cstdlib>
-#include <vector>
+#include <array>
 
 // create function prototypes
 int qsort_number_compare(const void *a, const void *b);
@@ -11,62 +11,59 @@ int qsort_string_compare(const void *a, const void *b);
 
 void qsort_sort(List &l, bool numeric)
 {
-    std::vector<Node *> nodes;
-    Node *temp = l.head;
-    //	std::cout << "BEFORE SORTING...\n";
-    //	dump_node(l.head);
+    Node **arrayOfNodes = new Node*[l.size];
 
-    // copy the list into the array of pointers
-    while (temp != NULL)
+	Node *temp = l.head;
+	int i = 0;
+
+	// copy the list into the array of pointers
+	while (temp != NULL)
     {
-        nodes.push_back(temp);
+        arrayOfNodes[i] = temp;
         temp = temp->next;
+		i++;
     }
 
     if (numeric)
     {
-        std::qsort(nodes.data(), nodes.size(), sizeof(Node *), qsort_number_compare);
+        std::qsort(arrayOfNodes, l.size, sizeof(Node*), qsort_number_compare);
     }
     else
     {
-        std::qsort(nodes.data(), nodes.size(), sizeof(Node *), qsort_string_compare);
+        std::qsort(arrayOfNodes, l.size, sizeof(Node*), qsort_string_compare);
     }
 
-    // Rebuild the linked list from the sorted nodes
-    l.head = nodes[0]; // Set the new head to the first node in the sorted list
+	// rebuild linked list properly
+	l.head = arrayOfNodes[0];
+	for(size_t i = 0; i < l.size - 1; ++i){
+		arrayOfNodes[i]->next = arrayOfNodes[i+1];
+	}
+	arrayOfNodes[l.size - 1]->next = NULL;
 
-    // Relink the nodes in the sorted order
-    for (size_t i = 0; i < nodes.size() - 1; ++i)
-    {
-        nodes[i]->next = nodes[i + 1]; // Link current node to the next one
-    }
-    // Ensure the last node points to NULL
-    nodes[nodes.size() - 1]->next = NULL;
-
-    //	std::cout << "AFTER SORTING...\n";
-    //	dump_node(l.head);
+	delete[] arrayOfNodes;
 }
 
 // create proper comparison functions
-int qsort_number_compare(const void *a, const void *b)
-{
-    // must dereference const void pointers to get the Node*
-    const Node *nodeA = *static_cast<const Node *const *>(a);
-    const Node *nodeB = *static_cast<const Node *const *>(b);
+int qsort_number_compare(const void *a, const void *b){
+	// must dereference const void pointers to get the Node*
+	Node* nodeA = (*(Node**)a);
+	Node* nodeB = (*(Node**)b);
 
-    if (nodeA->number > nodeB->number)
-        return 1;
-    if (nodeA->number < nodeB->number)
-        return -1;
-    return 0;
+	// compare the int fields
+	if (nodeA->number < nodeB->number){
+		return (-1);
+	}else if(nodeA->number > nodeB->number){
+		return (1);
+	}else{
+		return (0);
+	}
 }
 
-int qsort_string_compare(const void *a, const void *b)
-{
-    // do the same thing and dereference the void pointers to get Node*
-    const Node *nodeA = *static_cast<const Node *const *>(a);
-    const Node *nodeB = *static_cast<const Node *const *>(b);
+int qsort_string_compare(const void *a, const void *b){
+	// do the same thing and dereference the void pointers to get Node*
+	Node* nodeA = (*(Node**)a);
+	Node* nodeB = (*(Node**)b);
 
-    // compare the fields
-    return nodeA->string.compare(nodeB->string);
+	//compare the fields
+	return nodeA->string.compare(nodeB->string);
 }
