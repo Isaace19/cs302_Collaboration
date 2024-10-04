@@ -105,24 +105,26 @@ void Superball::sb_analyze() {
             if (board[index] == '.' || board[index] == '*')
                 continue;
 
-            
+            int curr = Dset.Find(index);
+
 
             // Union right neighbor if it exists and has the same color
-            if (j + 1 < c && board[index] == board[index + 1])
-                Dset.Union(Dset.Find(index), Dset.Find(index + 1));
+            if (j + 1 < c && board[index] == board[index + 1]){
+                int element1 = index + 1;
+                int root1 = Dset.Find(element1);
+                if(curr != root1){
+                    Dset.Union(Dset.Find(curr), Dset.Find(root1));
+                }
+            }
 
             // Union down neighbor if it exists and has the same color
-            if (i + 1 < r && board[index] == board[index + c])
-                Dset.Union(Dset.Find(index), Dset.Find(index + c));
-
-            // Union left neighbor if it exists and has the same color
-            if (j - 1 >= c && board[index] == board[index - 1])
-                Dset.Union(Dset.Find(index), Dset.Find(index - 1));
-
-            // Union above neighbor if it exists and has the same color
-            if (i - 1 >= r && board[index] == board[index - c])
-                Dset.Union(Dset.Find(index), Dset.Find(index - c));
-
+            if (i + 1 < r && board[index] == board[index + c]){
+                int element1 = index + c;
+                int root1 = Dset.Find(element1);
+                if(curr != root1){
+                    Dset.Union(Dset.Find(curr), Dset.Find(root1));
+                }
+            }
         }
     }
 
