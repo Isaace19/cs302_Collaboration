@@ -139,9 +139,12 @@ void Superball::sb_analyze() {
                 continue;
 
             int curr = Dset.Find(index);
+            set_cells[curr].emplace_back(i, j);  
             set_size[curr]++;                     
-            set_cells[curr].emplace_back(i, j);   
+             
 
+            // find the root of the current cell, and check if that cell is goal. 
+            // this evaluates to true if it's a goal, meaning that the connected component curr contains a goal cell
             if (goals[index]) {
                 set_has_goal[curr] = true;
             }
@@ -156,8 +159,14 @@ void Superball::sb_analyze() {
         int root = it->first;
         vector<pair<int, int> > &cells = it->second;
 
+
+        // output all the valid scoring sets. process all cells, and then iterate the set_cells. which contains the disjoint sets.
+
+        // for each disjoint set, it checks the size of the set_size[root] and whether it has a goal or not. 
         if (set_size[root] >= mss && set_has_goal[root]) {
-            // Find a goal cell within the set
+            // initialize the scoring cell to -1,-1 -- no goal cell here
+            // for each cell as we iterate, where first is the row and second is the column, calculates the index in the goals array.
+            // if a goal cell is found, assigns that coordinate to the scoring cell and breaks the loop. 
             std::pair<int, int> scoring_cell(-1,-1);
             for (vector<pair<int, int> >::iterator cell_it = cells.begin(); cell_it != cells.end(); ++cell_it) {
                 if (goals[cell_it->first * c + cell_it->second]) {
@@ -166,15 +175,16 @@ void Superball::sb_analyze() {
                 }
             }
 
-            // Fallback: use the first cell if no goal is found (shouldn't happen)
+            // Fallback: use the first cell if no goal is found -- worst case shouldn't happen...
             if (scoring_cell.first == -1) {
                 scoring_cell = cells[0];
             }
 
+            // output the Size of the score, the color, and the location on the board.
             char color = board[cells[0].first * c + cells[0].second];
             cout << "  Size: " << set_size[root]
-                << "  Char: " << color
-                << "  Scoring Cell: " << scoring_cell.first << "," << scoring_cell.second << "\n";
+                 << "  Char: " << color
+                 << "  Scoring Cell: " << scoring_cell.first << "," << scoring_cell.second << "\n";
         }
     }
 }
