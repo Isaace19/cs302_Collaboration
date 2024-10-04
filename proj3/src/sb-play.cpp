@@ -1,4 +1,4 @@
-#include "disjoint_set.hpp"
+#include "disjoint.h"
 #include <iostream>
 using namespace std;
 
