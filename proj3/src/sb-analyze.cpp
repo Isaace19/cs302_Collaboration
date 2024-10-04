@@ -3,6 +3,7 @@
 #include <cstring>
 #include <ctype.h>
 #include <iostream>
+#include <utility>
 #include <vector>
 #include <unordered_map>
 
@@ -95,6 +96,8 @@ void Superball::sb_analyze() {
     // Map to track the size of each disjoint set component
     std::unordered_map<int, int> set_size;
     std::unordered_map<int, std::vector<std::pair<int, int> > > set_cells;
+    std::unordered_map<int, bool> set_has_goal;
+
 
     // Union connected cells of the same color (right and down neighbors)
     for (int i = 0; i < r; ++i) {
@@ -107,60 +110,73 @@ void Superball::sb_analyze() {
 
             int curr = Dset.Find(index);
 
-
-            // Union right neighbor if it exists and has the same color
+            // Union right
             if (j + 1 < c && board[index] == board[index + 1]){
                 int element1 = index + 1;
                 int root1 = Dset.Find(element1);
                 if(curr != root1){
-                    Dset.Union(Dset.Find(curr), Dset.Find(root1));
+                    Dset.Union(Dset.Find(index), Dset.Find(root1));
                 }
             }
-
-            // Union down neighbor if it exists and has the same color
+            
+            // Union down 
             if (i + 1 < r && board[index] == board[index + c]){
                 int element1 = index + c;
                 int root1 = Dset.Find(element1);
                 if(curr != root1){
-                    Dset.Union(Dset.Find(curr), Dset.Find(root1));
+                    Dset.Union(Dset.Find(index), Dset.Find(root1));
                 }
             }
         }
     }
 
-    // Analyze the connected components
     for (int i = 0; i < r; ++i) {
         for (int j = 0; j < c; ++j) {
-            int index = i * c + j;
+            int index = i * c + j;  // Current index in the one-dimensional array
+
+            // Skip if the cell is empty or a goal
             if (board[index] == '.' || board[index] == '*')
                 continue;
 
-            int root = Dset.Find(index);  // Find the root of the set
-            set_size[root]++;                     // Increment the size of the set
-            set_cells[root].emplace_back(i, j);   // Track the cells in this set
+            int curr = Dset.Find(index);
+            set_size[curr]++;                     
+            set_cells[curr].emplace_back(i, j);   
+
+            if (goals[index]) {
+                set_has_goal[curr] = true;
+            }
         }
     }
 
     // print out scoring sets if they pass the criteria of MSS
-    std::cout << "Scoring Sets:\n";
-    for (std::unordered_map<int, std::vector<std::pair<int, int> > >::iterator it = set_cells.begin(); it != set_cells.end(); ++it) {
+    // fix logic to only print out when on a scoring set
+    // Output valid scoring sets
+    cout << "Scoring Sets:\n";
+    for (unordered_map<int, vector<pair<int, int> > >::iterator it = set_cells.begin(); it != set_cells.end(); ++it) {
         int root = it->first;
-        std::vector<std::pair<int, int> >& cells = it->second;  // Reference to the vector of cells for this set
+        vector<pair<int, int> > &cells = it->second;
 
-        // Check if the set size meets the minimum scoring size requirement
-        if (set_size[root] >= mss) {
-            // get color and than get the scoring pair
-            char color = std::tolower(board[cells[0].first * c + cells[0].second]);
+        if (set_size[root] >= mss && set_has_goal[root]) {
+            // Find a goal cell within the set
+            std::pair<int, int> scoring_cell(-1,-1);
+            for (vector<pair<int, int> >::iterator cell_it = cells.begin(); cell_it != cells.end(); ++cell_it) {
+                if (goals[cell_it->first * c + cell_it->second]) {
+                    scoring_cell = *cell_it;
+                    break;
+                }
+            }
 
-            std::pair<int, int> scoring_cell = cells[0];
+            // Fallback: use the first cell if no goal is found (shouldn't happen)
+            if (scoring_cell.first == -1) {
+                scoring_cell = cells[0];
+            }
 
-            // output
-            std::cout << "  Size: " << set_size[root]
-                      << "  Char: " << color
-                      << "  Scoring Cell: " << scoring_cell.first << "," << scoring_cell.second << "\n";
+            char color = board[cells[0].first * c + cells[0].second];
+            cout << "  Size: " << set_size[root]
+                << "  Char: " << color
+                << "  Scoring Cell: " << scoring_cell.first << "," << scoring_cell.second << "\n";
         }
     }
-
 }
 
 int main(int argc, char **argv) {
