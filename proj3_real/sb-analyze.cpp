@@ -29,6 +29,11 @@ public:
     vector<int> goals;
     vector<int> colors;
 
+    // Map to track the size of each disjoint set component
+    std::unordered_map<int, int> set_size;
+    std::unordered_map<int, std::vector<std::pair<int, int> > > set_cells;
+    std::unordered_map<int, bool> set_has_goal;
+
 private:
     DisjointSetByRankWPC Dset; // Use the DisjointSetByRankWPC class
 };
@@ -102,12 +107,6 @@ Superball::Superball(int argc, char **argv) : Dset(0) {  // Initialize the disjo
 }
 
 void Superball::sb_analyze() {
-    // Map to track the size of each disjoint set component
-    std::unordered_map<int, int> set_size;
-    std::unordered_map<int, std::vector<std::pair<int, int> > > set_cells;
-    std::unordered_map<int, bool> set_has_goal;
-
-
     // Union connected cells of the same color (right and down neighbors)
     for (int i = 0; i < r; ++i) {
         for (int j = 0; j < c; ++j) {
