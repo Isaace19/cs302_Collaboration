@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/isaacabella/Documents/f2024/CS_302/locals/local_chall/challenge03",
+      "program": "/Users/isaacabella/Documents/f2024/CS_302/locals/local_chall/challenge03/build/Debug/outDebug"
+    }
+  ]
+}
