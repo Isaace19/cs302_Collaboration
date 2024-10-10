@@ -25,6 +25,7 @@ the minimum spanning tree will have the total edge of 10 and consist of:
 #include <limits>
 #include <string>
 #include <functional> // Required for std::function
+#include <cctype> // alphanumeric converesion 
 
 
 
@@ -57,8 +58,7 @@ public:
     std::unordered_map<std::string, Node *> Nodes;
     std::vector<Edge *> Edges;
 
-    // create a set of indegrees and verticies for our directed graph in order to run a topological sort
-
+    // deconstructor -- memory management
     ~undirgraph()
     {
         for (Edge *edge : Edges)
@@ -71,7 +71,7 @@ public:
         }
     }
 
-    // Helper function to find or create nodes by their id
+    // create nodes given on their input -- modify the input to account for verticies and adjancey list. 
     Node *initialize_node(const std::string &id)
     {
         if (Nodes.find(id) == Nodes.end())
@@ -81,7 +81,7 @@ public:
         return Nodes[id];
     }
 
-    // undirected edge between source and sink
+    // undirected edge between source and sink -- modify to take in adjancey list and prim's algorithm
     void add_Edges(const std::string &source_id, const std::string &sink_id, int weight = 0)
     {
         Node *source = initialize_node(source_id);
@@ -93,88 +93,35 @@ public:
         Edges.push_back(edge);
     }
 
+    // compare Node A to B and return the greater than node. 
     bool compare(const std::pair<Node *, int>&a, const std::pair<Node *, int>&b) {
         return a.second > b.second;
     }
 
     // modify a dijkstra algorithm to be a prim's algorithm
-    void Prim(const std::string source_id){
-        std::vector<Edge *> MST_EDGES;
-        std::unordered_map<Node *, int> distance;
-        std::unordered_map<Node *, Node *> parent;
-        std::unordered_map<Node *, bool> INCLUDED_MST;
-        int total_weight = 0;
-
-        // initilaize all nodes to infinity distance
-        for(std::unordered_map<std::string, Node *>::iterator it = Nodes.begin(); it != Nodes.end(); ++it){
-            distance[it->second] = std::numeric_limits<int>::max();
-            INCLUDED_MST[it->second] = false; // unvisited
-        }
-
-        Node *source = initialize_node(source_id);
-        distance[source] = 0;
-        parent[source] = nullptr;
-
-        // create priority queue forest
-        std::priority_queue<std::pair<int, Node*>, std::vector<std::pair<int, Node *>>, std::greater<std::pair<int, Node*>>> pq;
-        pq.push(std::make_pair(0, source));
-
-        while(!pq.empty()){
-            Node *unvisted = pq.top().second;
-            pq.pop();
-
-            if(INCLUDED_MST[unvisted]){
-                continue;
-            }
-            // mark the current vertex as INCLUDED
-            INCLUDED_MST[unvisted] = true;
-            // now explore all adjacent nodes
-            for(std::vector<Edge *>::iterator it = unvisted->edges.begin(); it != unvisted->edges.end(); ++it){
-                Edge *edge = *it;
-                Node *neighbor = (edge->source == unvisted) ? edge->sink : edge-> source;
-                // if the vertex is not in the MSt, than there exists an edge from unvisted to vertex and the weight is smaller than our current key of vertex.
-                if(!INCLUDED_MST[neighbor] && edge->weight < distance[neighbor]){
-                    distance[neighbor] = edge->weight;
-                    parent[neighbor] = unvisted;
-
-                    pq.push(std::make_pair(edge->weight, neighbor));
-                }
-            }
-        }
-        // output the total MST
-        std::cout << "OUTPUT...\n";
-        for(std::unordered_map<Node *, Node *>::iterator it = parent.begin(); it != parent.end(); ++it){
-            if(it->second != nullptr){
-                std::cout << it->second->id << " -- " << it->first->id <<  "Weight: " << distance[it->first] << '\n';
-                total_weight += distance[it->first];
-            }
-        }
-        std::cout << " TOTAL WEIGHT: " << total_weight << '\n';
-    }
+    void Prim(const std::string source_id){        
+        // use a heap to account for everything, will have to use multiple data structures
+    }   
 };
 
 // Main Execution
 int main(int argc, char *argv[])
 {
-    int graph_number = 0;
-    std::cin >> graph_number;
+    // perform bit ops to convert int V into proper alphanumeric conversion 
+    undirgraph graphy;
 
-    for(int i = 0; i < graph_number; ++i){
-        int n;
-        std::cin >> n;
+    // the input of verticies to the list below it. // assume that these are A - Z. 
+    // create an adjancey matrix, read into it with 2D matrix traversal
 
-        undirgraph g;
-
-        for(int row = 0; row < n; ++row){
-            for(int col = 0; col < n; ++col){
-                int weight;
-                std::cin >> weight;
-                if (weight != -1 && row != col) { // Exclude self-loops and -1 (no edge)
-                    g.add_Edges(std::to_string(row), std::to_string(col), weight);
-                }
-            }
+    int V;
+    std::cin >> V;
+    std::vector<std::vector<int>> graph(V, std::vector<int>(V));
+    for(size_t i = 0; i < V; ++i){
+        for(size_t j = 0; j < V; ++ j){
+            std::cin >> graph[i][j];
+            graphy.add_Edges(std::to_string(i), std::to_string(j));
         }
-        g.Prim("A");
     }
+    graphy.Prim("A");
     return (0);
 }
