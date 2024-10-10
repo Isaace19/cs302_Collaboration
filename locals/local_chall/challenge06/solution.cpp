@@ -93,46 +93,88 @@ public:
         Edges.push_back(edge);
     }
 
-    // modify a dijkstra algorithm to be a prim's algorithm
-    void Prim_Alg(const std::string source_id){
-        std::unordered_map<Node *, int> distances;
-
-        auto compare = [](std::pair<Node *, int>&a, std::pair<Node *, int >&b){
-            return a.second > b.second:
-        }
-        // while this looks disgusting, this is a priority queue of a node with an edge, and a vector list of all nodes and edges, and a function to compare the node edges 
-        std::priority_queue<std::pair<Node *, int>, std::vector<std::pair<Node *, int>, std::function<bool(std::pair<Node *, int > &, std::pair<Node*, int> &)>> pq(compare);
-        
-        // set the distances of everything to infinity since you don't know the actual distances, these will update
-        for(std::unordered_map<std::string, Node*>::iterator it = Nodes.begin(), it != Nodes.end(); ++it){
-            distance[it->second] = std::numeric_limits<int>::max();
-        }
-
-        // start from source and calc(slang for calculate )distances
-        Node *source = Nodes[source_id];
-        distances[source] = 0;
-
-        // set the source to new distances
-        pq.push_back(std::make_pair<source, 0>);
-
-        while(!pq.empty()){
-            //acquire the node with the smallest distance, which is the top of the priority queue using .top()
-            std::pair<Node*, int> curr_pair = pq.top();
-            Node *curr = curr_pair.first;
-            int curr_distance = curr_pair.second;
-            pq.pop();
-
-            if(curr_distance > distances[curr]){
-                
-            }
-        }
+    bool compare(const std::pair<Node *, int>&a, const std::pair<Node *, int>&b) {
+        return a.second > b.second;
     }
 
+    // modify a dijkstra algorithm to be a prim's algorithm
+    void Prim(const std::string source_id){
+        std::vector<Edge *> MST_EDGES;
+        std::unordered_map<Node *, int> distance;
+        std::unordered_map<Node *, Node *> parent;
+        std::unordered_map<Node *, bool> INCLUDED_MST;
+        int total_weight = 0;
 
+        // initilaize all nodes to infinity distance
+        for(std::unordered_map<std::string, Node *>::iterator it = Nodes.begin(); it != Nodes.end(); ++it){
+            distance[it->second] = std::numeric_limits<int>::max();
+            INCLUDED_MST[it->second] = false; // unvisited
+        }
+
+        Node *source = initialize_node(source_id);
+        distance[source] = 0;
+        parent[source] = nullptr;
+
+        // create priority queue forest
+        std::priority_queue<std::pair<int, Node*>, std::vector<std::pair<int, Node *>>, std::greater<std::pair<int, Node*>>> pq;
+        pq.push(std::make_pair(0, source));
+
+        while(!pq.empty()){
+            Node *unvisted = pq.top().second;
+            pq.pop();
+
+            if(INCLUDED_MST[unvisted]){
+                continue;
+            }
+            // mark the current vertex as INCLUDED
+            INCLUDED_MST[unvisted] = true;
+            // now explore all adjacent nodes
+            for(std::vector<Edge *>::iterator it = unvisted->edges.begin(); it != unvisted->edges.end(); ++it){
+                Edge *edge = *it;
+                Node *neighbor = (edge->source == unvisted) ? edge->sink : edge-> source;
+                // if the vertex is not in the MSt, than there exists an edge from unvisted to vertex and the weight is smaller than our current key of vertex.
+                if(!INCLUDED_MST[neighbor] && edge->weight < distance[neighbor]){
+                    distance[neighbor] = edge->weight;
+                    parent[neighbor] = unvisted;
+
+                    pq.push(std::make_pair(edge->weight, neighbor));
+                }
+            }
+        }
+        // output the total MST
+        std::cout << "OUTPUT...\n";
+        for(std::unordered_map<Node *, Node *>::iterator it = parent.begin(); it != parent.end(); ++it){
+            if(it->second != nullptr){
+                std::cout << it->second->id << " -- " << it->first->id <<  "Weight: " << distance[it->first] << '\n';
+                total_weight += distance[it->first];
+            }
+        }
+        std::cout << " TOTAL WEIGHT: " << total_weight << '\n';
+    }
 };
 
 // Main Execution
 int main(int argc, char *argv[])
 {
+    int graph_number = 0;
+    std::cin >> graph_number;
+
+    for(int i = 0; i < graph_number; ++i){
+        int n;
+        std::cin >> n;
+
+        undirgraph g;
+
+        for(int row = 0; row < n; ++row){
+            for(int col = 0; col < n; ++col){
+                int weight;
+                std::cin >> weight;
+                if (weight != -1 && row != col) { // Exclude self-loops and -1 (no edge)
+                    g.add_Edges(std::to_string(row), std::to_string(col), weight);
+                }
+            }
+        }
+        g.Prim("A");
+    }
     return (0);
 }
