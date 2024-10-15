@@ -20,12 +20,12 @@ the minimum spanning tree will have the total edge of 10 and consist of:
 
 #include <iostream>
 #include <vector>
-#include <unordered_map>
 #include <queue>
 #include <limits>
 #include <string>
 #include <functional> // Required for std::function
 #include <cctype>
+#include <string>
 
 class Node; // use forward declaration to avoid compilation errors
 class Edge
@@ -92,23 +92,23 @@ public:
         Edges.push_back(edge);
     }
 
-	void init_matrix(int num_vertex, const std::vector<std::vector<int>> &input_graph){
-		// initialize verticies and converts them to alphanumeric names 
-		std::vector<std::string> vertex_ids;
-		for(int i = 0; i < num_vertex; ++i){
-			vertex_ids.push_back(std::string(1, 'A' + i)); // Generates the IDS to A, B, C
-		}
+    void init_matrix(int num_vertex, const std::vector<std::vector<int>> &input_graph) {
+        std::vector<std::string> vertex_ids;
+        for (int i = 0; i < num_vertex; ++i) {
+            vertex_ids.push_back(std::string(1, 'A' + i)); // Generates 'A', 'B', 'C', etc.
+        }
 
-		// create the actual nodes 
-		for(int i = 0; i < num_vertex; ++i){
-			for(int j = i + 1; j < num_vertex; ++j){
-				int weight = input_graph[i][j];
-				if(weight > 0){ // ignore -1 with no correction
-					add_Edges(vertex_ids[i], vertex_ids[j], weight);
-				}
-			}
-		}
-	}
+        // Create edges based on input graph
+        for (int i = 0; i < num_vertex; ++i) {
+            for (int j = i + 1; j < num_vertex; ++j) {
+                int weight = input_graph[i][j];
+                if (weight > 0) {
+                    add_Edges(vertex_ids[i], vertex_ids[j], weight);
+                }
+            }
+        }
+    }
+
 
 	// I'm creating a debugging output function in order to see what we're actually creating in the init_matrix and add_Edges
 	void print(){
@@ -147,49 +147,81 @@ public:
         return a.second > b.second;
     }
 
-	 bool dijkstra(const std::string &start_id)
-    {
-    	std::unordered_map<std::string, int> distances;
-		std::unordered_map<std::string, bool> visited;
-		std::priority_queue<std::pair<int, Node *>, std::vector<std::pair<int, Node *>>, std::greater<std::pair<int, Node *>>> pq;
-		
-		// initialize all distances to infinity and the visited nodes to false
-		for(const auto &pair : Nodes){
-			distances[pair.first] = std::numeric_limits<int>::max(); // set to infinity
-			visited[pair.first] = false;     // set visited to false
-		}
-		// set the starting node to 0
-		distances[start_id] = 0;
-		pq.push({0, Nodes[start_id]}); // insert the starting node into the pq
-		
-		while(!pq.empty()){
-			
-		}
-	};
+    void Prim() {
+        std::unordered_map<std::string, int> key;    // store weights
+        std::unordered_map<std::string, std::string> parent; // store parent of each node
+        std::unordered_map<std::string, bool> inMST; // store whether a node is part of MST
 
-    // modify a dijkstra algorithm to be a prim's algorithm
-    void Prim(const std::string source_id){
-        
+        // Use a priority queue with (key, node id)
+        std::priority_queue<std::pair<int, std::string>, std::vector<std::pair<int, std::string>>, std::greater<std::pair<int, std::string>>> pq;
+
+        // Initialize all keys to infinity and inMST to false
+        for (const auto &node_pair : Nodes) {
+            key[node_pair.first] = std::numeric_limits<int>::max();
+            inMST[node_pair.first] = false;
+        }
+
+        // Start from the first node (arbitrary choice)
+        std::string start_node = Nodes.begin()->first;
+        key[start_node] = 0;
+        pq.push({0, start_node});
+
+        while (!pq.empty()) {
+            std::string u = pq.top().second; // Extract node with minimum key
+            pq.pop();
+
+            inMST[u] = true;
+
+            // Loop through adjacent edges of `u`
+            for (Edge *edge : Nodes[u]->edges) {
+                std::string v = (edge->sink->id == u) ? edge->source->id : edge->sink->id;
+                int weight = edge->weight;
+
+                // If `v` is not yet in the MST and weight is smaller than key[v]
+                if (!inMST[v] && weight < key[v]) {
+                    key[v] = weight;
+                    parent[v] = u;
+                    pq.push({key[v], v});
+                }
+            }
+        }
+
+        // Output the MST edges
+        int total_weight = 0;
+        for (const auto &p : parent) {
+            if (!p.first.empty()) {
+                total_weight += key[p.first];
+            }
+        }
+        std::cout << total_weight << std::endl; // Print the total weight of the MST
+        for (const auto &p : parent) {
+            if (!p.second.empty()){
+                std::cout << p.second << p.first << std::endl;
+            }
+        }
+        std::cout << "\n";
     }
 };
 
 // Main Execution
 int main(int argc, char *argv[])
 {
-	int V;
-	std::cin >> V;
+    int V;
 
-	std::vector<std::vector<int>> input_graph(V, std::vector<int>(V));	
+    while(std::cin >> V){
+        std::vector<std::vector<int>> input_graph(V, std::vector<int>(V));	
+        
+        for(int i = 0; i < V; ++i){
+            for(int j = 0; j < V; ++j){
+                std::cin >> input_graph[i][j];
+            }
+        }
+
+        undirgraph g;
+    //	g.print_initial(input_graph); // this is the debugging the input
+        g.init_matrix(V, input_graph);
+        g.Prim();
+    }
 	
-	for(int i = 0; i < V; ++i){
-		for(int j = 0; j < V; ++j){
-			std::cin >> input_graph[i][j];
-		}
-	}
-
-	undirgraph g;
-//	g.print_initial(input_graph); // this is the debugging the input
-	g.init_matrix(V, input_graph);
-	g.print();
 	return (0);
 }
