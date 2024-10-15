@@ -26,6 +26,7 @@ the minimum spanning tree will have the total edge of 10 and consist of:
 #include <functional> // Required for std::function
 #include <cctype>
 #include <string>
+#include <map>
 
 class Node; // use forward declaration to avoid compilation errors
 class Edge
@@ -148,9 +149,9 @@ public:
     }
 
     void Prim() {
-        std::unordered_map<std::string, int> key;    // store weights
-        std::unordered_map<std::string, std::string> parent; // store parent of each node
-        std::unordered_map<std::string, bool> inMST; // store whether a node is part of MST
+        std::map<std::string, int> key;    // store weights
+        std::map<std::string, std::string> parent; // store parent of each node
+        std::map<std::string, bool> inMST; // store whether a node is part of MST
 
         // Use a priority queue with (key, node id)
         std::priority_queue<std::pair<int, std::string>, std::vector<std::pair<int, std::string>>, std::greater<std::pair<int, std::string>>> pq;
@@ -196,7 +197,7 @@ public:
         std::cout << total_weight << std::endl; // Print the total weight of the MST
         for (const auto &p : parent) {
             if (!p.second.empty()){
-                std::cout << p.second << p.first << std::endl;
+                std::cout << p.first << p.second << std::endl;
             }
         }
         std::cout << "\n";
