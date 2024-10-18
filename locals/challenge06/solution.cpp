@@ -23,10 +23,8 @@ the minimum spanning tree will have the total edge of 10 and consist of:
 #include <queue>
 #include <limits>
 #include <string>
-#include <functional> // Required for std::function
-#include <cctype>
-#include <string>
 #include <map>
+#include <algorithm> // For sorting edges
 
 class Node; // use forward declaration to avoid compilation errors
 class Edge
@@ -143,15 +141,14 @@ public:
 
 	}
 
-
     bool compare(const std::pair<Node *, int>&a, const std::pair<Node *, int>&b) {
         return a.second > b.second;
     }
 
-    void Prim() {
-        std::map<std::string, int> key;    // store weights
+    void Prim(bool first_case) {
+        std::map<std::string, int> key;            // store weights
         std::map<std::string, std::string> parent; // store parent of each node
-        std::map<std::string, bool> inMST; // store whether a node is part of MST
+        std::map<std::string, bool> inMST;         // store whether a node is part of MST
 
         // Use a priority queue with (key, node id)
         std::priority_queue<std::pair<int, std::string>, std::vector<std::pair<int, std::string>>, std::greater<std::pair<int, std::string>>> pq;
@@ -168,12 +165,12 @@ public:
         pq.push({0, start_node});
 
         while (!pq.empty()) {
-            std::string u = pq.top().second; // Extract node with minimum key
+            std::string u = pq.top().second; 
             pq.pop();
 
             inMST[u] = true;
 
-            // Loop through adjacent edges of `u`
+            // loop through adjacent edges of the unvisted node
             for (Edge *edge : Nodes[u]->edges) {
                 std::string v = (edge->sink->id == u) ? edge->source->id : edge->sink->id;
                 int weight = edge->weight;
@@ -189,25 +186,34 @@ public:
 
         // Output the MST edges
         int total_weight = 0;
+        std::vector<std::string> mst_edges;
         for (const auto &p : parent) {
             if (!p.first.empty()) {
                 total_weight += key[p.first];
+                std::string edge = p.first + p.second;
+                if (edge[0] > edge[1]) std::swap(edge[0], edge[1]); // Ensure alphabetical order
+                mst_edges.push_back(edge);
             }
         }
-        std::cout << total_weight << std::endl; // Print the total weight of the MST
-        for (const auto &p : parent) {
-            if (!p.second.empty()){
-                std::cout << p.first << p.second << std::endl;
-            }
+
+        if (!first_case) {
+            std::cout << "\n";  // Print newline before each MST except the first one
         }
-        std::cout << "\n";
+
+        std::cout << total_weight << std::endl; 
+        std::sort(mst_edges.begin(), mst_edges.end());
+        for (const std::string &edge : mst_edges) {
+            std::cout << edge << std::endl;
+        }
     }
 };
+
 
 // Main Execution
 int main(int argc, char *argv[])
 {
     int V;
+    bool first_case = true;
 
     while(std::cin >> V){
         std::vector<std::vector<int>> input_graph(V, std::vector<int>(V));	
@@ -219,10 +225,10 @@ int main(int argc, char *argv[])
         }
 
         undirgraph g;
-    //	g.print_initial(input_graph); // this is the debugging the input
         g.init_matrix(V, input_graph);
-        g.Prim();
+        g.Prim(first_case);
+        first_case = false;  // Set to false after processing the first case
     }
 	
-	return (0);
+    return 0;
 }
