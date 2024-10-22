@@ -1,5 +1,5 @@
 CXX=		g++
-CXXFLAGS=	-g -Wall -std=gnu++11
+CXXFLAGS=	-g -Wall -std=gnu++11 -pg
 SHELL=		bash
 PROGRAMS=	src/dijkstras
 
