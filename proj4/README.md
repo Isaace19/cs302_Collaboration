@@ -13,7 +13,7 @@ memory usage is grabbed from maximum resident set size used by the
 usr/bin/time -al
 
 | N    | Elapsed Time | Memory Usage |
-|------------------------------------|
+|------|--------------|--------------|
 | 10   |       0.26s  |   1114112kb  |
 | 20   |       0.00s  |   1130496kb  |
 | 50   |       0.00s  |   1294336kb  |
