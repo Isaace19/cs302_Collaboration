@@ -22,7 +22,9 @@ Things that I've changed for this version. Creating more efficient lookup algori
 #include <memory>
 #include <utility>
 
-const int INFINITY = std::numeric_limits<int>::max();
+
+// replace INFINITY to INF because I think that's a protected macro?
+const int INF = std::numeric_limits<int>::max();
 typedef std::pair<int, int> Node;	    // stores the x,y coordinate of the node 
 typedef std::pair<int, Node> pq_elm; // represents a pair in the priority queue for dijkstra's algorithmz 
 
@@ -38,9 +40,12 @@ inline int get_index(int row, int col, int width){
 void dijkstra(const std::vector<char>& map_layout, const std::unordered_map<char, int>& cost, int start_row, int start_col, int end_row, int end_col, int ROW, int COL){
 
 	std::priority_queue<pq_elm, std::vector<pq_elm>, std::greater<pq_elm>> pq;
-	std::vector<int> distance(ROW * COL, INFINITY); // set all nodes to infinity at initial start
+	std::vector<int> distance(ROW * COL, INF); // set all nodes to INF at initial start
 	std::vector<Node> parent(ROW * COL, {-1,-1});
-	
+	// insert a visited vector to keep track of visited nodes.
+	std::vector<bool> visited(ROW * COL, false);	
+
+
 	int start_index = get_index(start_row, start_col, COL);
 	int end_index = get_index(end_row, end_col, COL);
 
@@ -56,21 +61,32 @@ void dijkstra(const std::vector<char>& map_layout, const std::unordered_map<char
 
 		int curr_index = get_index(current_row, current_col, COL);
 
+		if(visited[curr_index]){
+			continue; // skip because it was already visited
+		}
+		visited[curr_index] = true;
+
+
 		if (curr_index == end_index) {
-            // Path reconstruction
-            std::vector<Node> path;
-            for (Node at = {end_row, end_col}; at != Node{-1, -1}; at = parent[get_index(at.first, at.second, COL)]) {
-                path.push_back(at);
-            }
-            std::reverse(path.begin(), path.end()); // Reverse the path to get it from start to end
-            
-            // Output the result
-            std::cout << distance[end_index] << "\n";
-            for (const auto& p : path) {
-                std::cout << p.first << " " << p.second << "\n";
-            }
-            return;
-        }
+        	int total_weight = 0;
+			std::vector<Node> path;
+
+			// get the path
+			for (Node at = {end_row, end_col}; at != Node{-1, -1}; at = parent[get_index(at.first, at.second, COL)]){
+				path.push_back(at);
+				if(at != Node{end_row, end_col}){
+					total_weight += cost.at(map_layout[get_index(at.first, at.second, COL)]);
+				}
+			}
+			std::reverse(path.begin(), path.end());
+
+			// output the final path
+			std::cout << total_weight << '\n';
+			for(const auto& p : path){
+				std::cout << p.first << " " << p.second << '\n';
+			}
+			return;
+		}
 
 		// traverse the neighbors
 		for(const auto& dir : directions){
@@ -79,7 +95,11 @@ void dijkstra(const std::vector<char>& map_layout, const std::unordered_map<char
 			int new_col = current_col + dir.second;
 			// this moves us up, down, left, right by assigning a shift in the current x and y axis
 
-			if(new_row >= 0 && new_row < ROW && new_col >= 0 && new_col < COL){
+			if(new_row < 0 || new_row >= ROW || new_col < 0 || new_col >= COL){
+				continue; // out of bounds checking
+			}
+	
+
 				int new_index = get_index(new_row, new_col, COL);
 				int new_cost = current_cost + cost.at(map_layout[new_index]);
 
@@ -90,7 +110,6 @@ void dijkstra(const std::vector<char>& map_layout, const std::unordered_map<char
 					parent[new_index] = {current_row, current_col};
 					pq.push({new_cost, {new_row, new_col}});
 				}
-			}
 		}
 	}
 	std::cout << "NO PATH IS FOUND.\n";	
@@ -134,3 +153,4 @@ int main(){
 
 	return 0;
 }
+
