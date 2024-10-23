@@ -7,164 +7,130 @@ ID: 000641840
 
 Description: Reconstructing program to be more efficient, moving away from graph class implementation and using a 
 
-Previous implementations became really hard to understand, so moving to a simpler implementaiton might yield more promising results
+Previous implementations became really hard to understand, so moving to a simpler implementaiton might yield more promising results.
+
+Things that I've changed for this version. Creating more efficient lookup algorithms and improving the data structures themselves
 *****************************
 */
 
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <limits>
 #include <unordered_map>
-#include <climits>
-#include <algorithm>
-using namespace std;
+#include <algorithm> // For sorting edges
+#include <memory>
+#include <utility>
 
-// Node structure to be used in the priority queue
-struct Node {
-    int x, y, weight;
-    Node(int x, int y, int w) : x(x), y(y), weight(w) {}
+const int INFINITY = std::numeric_limits<int>::max();
+typedef std::pair<int, int> Node;	    // stores the x,y coordinate of the node 
+typedef std::pair<int, Node> pq_elm; // represents a pair in the priority queue for dijkstra's algorithmz 
 
-    // operator overload for the dijkstra's shortest path when we compare unvistied to current pq node
-    bool operator>(const Node& other) const {
-        return weight > other.weight;
-    }
-};
 
-// Direction vectors for moving up, down, left, right
-const int dx[] = {-1, 1, 0, 0};
-const int dy[] = {0, 0, -1, 1};
+// represent grid in moves of up, down, left, and right.
+std::vector<std::pair<int, int>> directions = {{-1,0}, {1,0}, {0,-1}, {0,1}};
 
-// Reconstruct the path from end to start using the parent array
-vector<pair<int, int>> reconstructPath(const vector<vector<pair<int, int>>>& parent, pair<int, int> start, pair<int, int> end) {
-    vector<pair<int, int>> path;
-    pair<int, int> current = end;
-    
-    while (current != start) {
-        path.push_back(current);
-        current = parent[current.first][current.second];
-    }
-    
-    path.push_back(start);
-    reverse(path.begin(), path.end());
-    
-    return path;
+inline int get_index(int row, int col, int width){
+	return row * width +col; // grab the index of the current spot in the 2D matrix in order for fast lookup.
 }
 
-// Dijkstra's algorithm to find the shortest path
-int dijkstra(const vector<vector<int>>& grid, pair<int, int> start, pair<int, int> end, vector<pair<int, int>>& path) {
-    int rows = grid.size();
-    int cols = grid[0].size();
-    
-    vector<vector<int>> dist(rows, vector<int>(cols, INT_MAX)); // Distance array - adjusted all starting values to infinity
-    vector<vector<pair<int, int>>> parent(rows, vector<pair<int, int>>(cols, {-1, -1})); // Parent array for path reconstruction
-    priority_queue<Node, vector<Node>, greater<Node>> pq; // Min-heap priority queue
-    
-    // start with the source node and push that to the front of the pq. 
-    dist[start.first][start.second] = grid[start.first][start.second];
-    pq.push(Node(start.first, start.second, grid[start.first][start.second]));
-    
-    while (!pq.empty()) {
-        Node current = pq.top();
-        pq.pop();
-        
-        int d = current.weight;
-        int x = current.x;
-        int y = current.y;
-        
-        // if we're already at the destination, than there is no need to traverse the matrix
-        if (x == end.first && y == end.second) {
-            path = reconstructPath(parent, start, end);
-            return d; // Return the total distance when we reach the destination
-        }
-        
-        // traverse in 4 directions (hence the i < 4) allows use to look in left, right, above, below locations
+// create a dijkstra algorithm for the shortest path on the grid
+void dijkstra(const std::vector<char>& map_layout, const std::unordered_map<char, int>& cost, int start_row, int start_col, int end_row, int end_col, int ROW, int COL){
 
-        // iterate over the cardinal directions that are constants above. 
-        for (int i = 0; i < 4; ++i) {
-            int nx = x + dx[i];
-            int ny = y + dy[i];
-            
-            // bounds checking, if the new distance is less than the current stored distance, update the current distance and push it onto the pq.
-            if (nx >= 0 && nx < rows && ny >= 0 && ny < cols) {
-                int newDist = d + grid[nx][ny];
-                if (newDist < dist[nx][ny]) {
-                    dist[nx][ny] = newDist;
-                    pq.push(Node(nx, ny, newDist));
-                    parent[nx][ny] = {x, y}; // Set parent for path reconstruction
-                }
+	std::priority_queue<pq_elm, std::vector<pq_elm>, std::greater<pq_elm>> pq;
+	std::vector<int> distance(ROW * COL, INFINITY); // set all nodes to infinity at initial start
+	std::vector<Node> parent(ROW * COL, {-1,-1});
+	
+	int start_index = get_index(start_row, start_col, COL);
+	int end_index = get_index(end_row, end_col, COL);
+
+	pq.push({cost.at(map_layout[start_index]), {start_row, start_col}});
+	distance[start_index] = cost.at(map_layout[start_index]);
+
+	while(!pq.empty()){
+		// access the smallest element in the priority queue, where the weight is held first in pq_elm, and than the Node is the second in the pair which contains the x and y (first and second)
+		int current_cost = pq.top().first;
+		int current_row = pq.top().second.first;
+		int current_col = pq.top().second.second;
+		pq.pop();
+
+		int curr_index = get_index(current_row, current_col, COL);
+
+		if (curr_index == end_index) {
+            // Path reconstruction
+            std::vector<Node> path;
+            for (Node at = {end_row, end_col}; at != Node{-1, -1}; at = parent[get_index(at.first, at.second, COL)]) {
+                path.push_back(at);
             }
+            std::reverse(path.begin(), path.end()); // Reverse the path to get it from start to end
+            
+            // Output the result
+            std::cout << distance[end_index] << "\n";
+            for (const auto& p : path) {
+                std::cout << p.first << " " << p.second << "\n";
+            }
+            return;
         }
-    }
-    
-    return -1; // If no path is found
+
+		// traverse the neighbors
+		for(const auto& dir : directions){
+			// using the directions vector defined
+			int new_row = current_row + dir.first;
+			int new_col = current_col + dir.second;
+			// this moves us up, down, left, right by assigning a shift in the current x and y axis
+
+			if(new_row >= 0 && new_row < ROW && new_col >= 0 && new_col < COL){
+				int new_index = get_index(new_row, new_col, COL);
+				int new_cost = current_cost + cost.at(map_layout[new_index]);
+
+				// if new path is found: update the distance matrix with the new cost of the current tile explored, and update the location x and y in the typedef
+				if(new_cost < distance[new_index]){
+					distance[new_index] = new_cost;
+					// update the parent vector in order to build the reversal path
+					parent[new_index] = {current_row, current_col};
+					pq.push({new_cost, {new_row, new_col}});
+				}
+			}
+		}
+	}
+	std::cout << "NO PATH IS FOUND.\n";	
 }
 
-// Adjusted function to calculate the total cost, ignoring the destination tile
-int calculateTotalCost(const vector<vector<int>>& grid, const vector<pair<int, int>>& path) {
-    int total_cost = 0;
-    for (size_t i = 0; i < path.size() - 1; ++i) {
-        int x = path[i].first;
-        int y = path[i].second;
-        total_cost += grid[x][y]; // Only include the cost of leaving each tile
-    }
-    return total_cost;
-}
+int main(){
+    // input optimization
+    std::ios::sync_with_stdio(false);
+	std::cin.tie(nullptr);
 
-int main() {
-    ios::sync_with_stdio(false); 
-    cin.tie(nullptr);
+	int TILES;
+	std::cin >> TILES;
 
-    int tile_count;
-    cin >> tile_count;
-    
-    unordered_map<char, int> tile_cost; // Map to store tile costs
-    
-    for (int i = 0; i < tile_count; i++) {
-        char tile_name;
-        int cost;
-        cin >> tile_name >> cost;
-        tile_cost[tile_name] = cost;
-    }
+	// grab and store the tile costs form input
+	std::unordered_map<char, int> cost;
+	for(int i = 0; i < TILES; i++){
+		char tile; 
+		int value;
+		std::cin >> tile >> value;
+		cost[tile] = value;
+	}
 
-    int rows, cols;
-    cin >> rows >> cols;
+	// initialize map dimensions
+	int ROW, COL;
+	std::cin >> ROW >> COL;
 
-    vector<vector<int>> grid(rows, vector<int>(cols));
-    vector<vector<char>> tile_grid(rows, vector<char>(cols));
+	// turn the input into a flat 1D layout;
+	std::vector<char> map_layout(ROW * COL);
+	for(int i = 0; i < ROW; i++){
+		for(int j = 0; j < COL; j++){
+			std::cin >> map_layout[get_index(i, j, COL)];
+		}
+	}
 
-    // Parse the map layout
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            char tile;
-            cin >> tile;
-            grid[i][j] = tile_cost[tile]; // Convert tile symbol to its corresponding cost
-            tile_grid[i][j] = tile;
-        }
-    }
+	// grab the start and end positions
+	int start_row, start_col, end_row, end_col;
+	std::cin >> start_row >> start_col >> end_row >> end_col;
 
-    int start_x, start_y, end_x, end_y;
-    cin >> start_x >> start_y >> end_x >> end_y;
+	// run the dijkstra algorithm
+	dijkstra(map_layout, cost, start_row, start_col, end_row, end_col, ROW, COL);
 
-    pair<int, int> start = {start_x, start_y};
-    pair<int, int> end = {end_x, end_y};
-
-    vector<pair<int, int>> path; // Vector to store the shortest path
-    int total_weight = dijkstra(grid, start, end, path);
-
-    if (total_weight == -1) {
-        cout << "No path found." << endl;
-    } else {
-        // Calculate the total cost excluding the destination tile
-        int adjusted_total_cost = calculateTotalCost(grid, path);
-        
-        // Print the total path cost
-        cout << adjusted_total_cost << endl;
-
-        // Print the path row by row
-        for (auto& p : path) {
-            cout << p.first << " " << p.second << endl;
-        }
-    }
-
-    return 0;
+	return 0;
 }
