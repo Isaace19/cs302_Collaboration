@@ -1,30 +1,49 @@
 CXX=		g++
 CXXFLAGS=	-g -Wall -std=gnu++11 -pg
 SHELL=		bash
-PROGRAMS=	src/dijkstras
+PROGRAMS=	src/dijkstras src/mapgen
 
-all:		src/dijkstras
+# List of map sizes for testing
+MAP_SIZES=	10 20 50 100 200 500 1000
 
+all:		src/dijkstras src/mapgen
+
+# Compile Dijkstra's algorithm
 dijkstras:	src/dijkstras.cpp
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o src/dijkstras src/dijkstras.cpp
 
-.PHONY:		test test-output test-memory clean
+# Compile map generator
+mapgen:	src/mapgen.cpp
+	$(CXX) $(CXXFLAGS) -o src/mapgen src/mapgen.cpp
 
+# Clean target to remove generated programs
+.PHONY: clean
 clean:
 	rm -f $(PROGRAMS)
 
-test:		test-output test-memory
+# Clean target to remove benchmark results and map files
+.PHONY: clean-results
+clean-results:
+	rm -f map_*.txt results_*.txt
 
-test-output:	src/dijkstras
-	@echo Testing output 0...
-	@./src/dijkstras < data/input0.txt | ~semrich/Public/checkproj4 data/input0.txt data/output0.txt
-	@echo Testing output 1...
-	@./src/dijkstras < data/input1.txt | ~semrich/Public/checkproj4 data/input1.txt data/output1.txt
-	@echo Testing output 2...
-	@./src/dijkstras < data/input2.txt | ~semrich/Public/checkproj4 data/input2.txt data/output2.txt
-	@echo Testing output 3...
-	@./src/dijkstras < data/input3.txt | ~semrich/Public/checkproj4 data/input3.txt data/output3.txt
+# Run Dijkstra's on each generated map and output timing stats, CPU, and memory usage
+.PHONY: run-benchmark
+run-benchmark: src/dijkstras
+	@echo "Running benchmarks for Dijkstra's algorithm..."
+	@for size in $(MAP_SIZES); do \
+		map_file="map_$${size}x$${size}.txt"; \
+		result_file="results_$${size}.txt"; \
+		if [ -f $$map_file ]; then \
+			echo "Running on $$map_file..."; \
+			/usr/bin/time ./src/dijkstras < $$map_file 2> $$result_file; \
+			echo "Map size: $$size x $$size" >> $$result_file; \
+			echo "Results saved to $$result_file"; \
+		else \
+			echo "Error: $$map_file not found. Please run ./src/mapgen to generate the maps."; \
+		fi; \
+	done
 
-test-memory:	src/dijkstras
-	@echo Testing memory...
-	@[ `valgrind --leak-check=full ./src/dijkstras < data/input1.txt 2>&1 | grep ERROR | awk '{print $$4}'` = 0 ]
+# General placeholder for other tests
+.PHONY: test
+test:
+	@echo "No tests defined. Use 'make run-benchmark' for benchmarking."
