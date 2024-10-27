@@ -1,0 +1,2 @@
+        0.09 real         0.08 user         0.00 sys
+Map size: 200 x 200
