@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en"><script src="Project%2005_%20Letter%20Dice_files/fido2-page-script.js"></script><head>
+
+
+
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<title>Project 05: Letter Dice</title>
+
+
+<link rel="stylesheet" href="Project%2005_%20Letter%20Dice_files/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+<link href="Project%2005_%20Letter%20Dice_files/socialwidgets.css" type="text/css" rel="stylesheet"></head>
+
+<body>
+
+<div class="container">
+
+
+<h2> CS302 -- Project 5 -- Letter Dice</h2>
+<h3>
+<ul> <li> CS302 -- Advanced Data Structures and Algorithms
+</li><li> Spring, 2020
+</li><li> Courtesy of <a href="http://www.cs.utk.edu/~plank">James S. Plank</a>
+</li><li> Original file: <a href="http://web.eecs.utk.edu/~plank/plank/classes/cs302/Labs/Lab9/index.html">
+     <b>http://web.eecs.utk.edu/~jplank/plank/classes/cs302/Labs/Lab9</b></a>
+</li></ul>
+</h3>
+
+<hr>
+A prior 302/307 TA Camille Crumpton (2017) posted youtube videos to help with this project -- 
+<a href="https://www.youtube.com/playlist?list=PLQFSAfh8OMT6qqWxJlcRrK7poAk5VcmxS">they are here.</a>
+<hr>
+<h3>Introduction</h3>
+<p>NOTE:  We recommend that you work with a single partner on this project.  You also may work alone.
+
+</p><p>Suppose you are given some number of "word dice", 
+as in the picture below:
+</p><p></p><center><table border="3" cellpadding="3"><tbody><tr><td valign="top"><img src="Project%2005_%20Letter%20Dice_files/dice.jpg"></td></tr></tbody></table></center><p>
+
+<br>We won't constrain dice to have six sides -- we'll assume that a die may have any number
+of sides, and that the length of and an input string itself defines the number of sides and possible letters, respectively, of 
+a corresponding die. 
+
+</p><p>
+For example, let's assume that the above dice only have three sides each -- the sides
+that you can see.  Then, the file 
+<b><a href="https://web.eecs.utk.edu/~semrich/cs302-24/assignments/Dice1.txt">Dice1.txt</a></b> defines the four dice pictured:
+
+</p><p></p><center><table border="3" cellpadding="3"><tbody><tr><td><pre>ENG
+SAA
+PRR
+EAE
+</pre></td></tr></tbody></table></center>
+
+<h3>The problem you must solve</h3>
+
+Your task is to write a program called <b>worddice</b>.
+
+The input to this program is as follows:
+<ol>
+<li>The dice available, encoded as described above.
+</li><li>A list words to check if they can be spelled using these dice
+</li></ol>
+
+For example, the word "RAGE" may be spelled using 'R' from the "PRR" die, 'A' from the "SAA" die, 'G' 
+from the "ENG" die and 'E' from the "EAE" die.  Similarly, "SEEP" may be spelled
+with 'S' from the "SAA" die, 
+'E' from the "EAE" die, 
+'E' from the "ENG" die and
+'P' from the "PRR" die.
+
+<p>However, you cannot spell "PEEN", even though all the letters are there, because
+you would have to use the "ENG" die for both the 'E' and 'N'.
+
+
+</p><h3>Input/output</h3>
+
+The dice described above must be present in an input file.  Each die may have any number of 
+letters, and, within a file, the dice may all have differing numbers of letters.
+The word list is simply a second file containing words, one per line.  
+
+<p>For each word in the word list, your program
+should print out one of the following:
+</p><p>
+</p><ul>
+<li> If the word cannot be spelled: "Cannot spell <i>word</i>".
+</li><li> If the word can be spelled: The order of the dice used to spell out the word, then the word.
+The dice are numbered starting with zero.
+</li></ul>
+
+Here is a command line session example using the above dice and target words.  Note "GASP" can
+also be spelled, as shown below in the requested output format:
+
+<br><br>
+
+<pre>UNIX&gt; <b>cat Dice1.txt</b>
+ENG
+SAA
+PRR
+EAE
+UNIX&gt; <b>cat Words1.txt</b>
+RAGE
+SEEP
+PEEN
+GASP
+UNIX&gt; <b>worddice Dice1.txt Words1.txt</b>
+2,1,0,3: RAGE
+1,0,3,2: SEEP
+Cannot spell PEEN
+0,3,1,2: GASP
+UNIX&gt; <b></b>
+</pre>
+
+<hr>
+<h2>Organizing the program</h2>
+
+This is an example of a bipartite matching.  For each word, set 
+up a graph that matches dice to letters of the words.  For example,
+here are the above dice with the word "RAGE":
+<p></p><center><table border="3" cellpadding="3"><tbody><tr><td valign="top"><img src="Project%2005_%20Letter%20Dice_files/ex1.jpg"></td></tr></tbody></table></center><p>
+<br>Dr. Plank has included double-edges for the duplicate letters.  Your program can eliminate these if you
+want, since duplicate letters don't help you at all and just make your program run slower.  We'll accept either way.
+
+</p><p>You want to find a <i>matching</i> of this graph that is composed 
+of edges that connect two nodes, where no edge is incident to the same node.
+</p><p>
+To do this, you convert the graph into one in which network flow will solve the problem: a source
+node connected to each die, and a sink node connected to each letter of the word:
+</p><p></p><center><table border="3" cellpadding="3"><tbody><tr><td valign="top"><img src="Project%2005_%20Letter%20Dice_files/ex2.jpg"></td></tr></tbody></table></center><p>
+<br>Finding the maximum flow will discover the matching if it exists.  Here is
+the flow/matching in this example:
+</p><p></p><center><table border="3" cellpadding="3"><tbody><tr><td valign="top"><img src="Project%2005_%20Letter%20Dice_files/ex3.jpg"></td></tr></tbody></table></center><p>
+<br>Your program should use the Edmonds-Karp algorithm to determine maximum flow.  The fact that
+all edges have weight one makes this easier.
+</p><p>
+Dr. Plank's implementation is slow for two reasons.  First, he creates and destroys the graph with each
+word.  It would be faster if he never deleted the source and dice nodes/edges.
+Second, when he created the edges to each letter of the word, he used the <b>Find()</b>
+method on the dice strings.  That is inefficient as compared with other potential optimizations,
+but probably what you will also use given what we have covered in 140/302.
+
+</p><hr>
+<h3>Hint: read the input and create the graphs first</h3>
+
+The program <b>readorig</b> was the first step for both of us -- reading the input, creating the
+network flow graph, and printing it out.  Note, in sample output below from Dr. Plank, his
+program does not have duplicate edges.  This will help get you started.
+
+<br><br>
+<pre>UNIX&gt; <b>readorig Dice1.txt Words1.txt</b>
+Node 0: SOURCE Edges to 1 2 3 4
+Node 1: ENG Edges to 7 8
+Node 2: SAA Edges to 6
+Node 3: PRR Edges to 5
+Node 4: EAE Edges to 6 8
+Node 5: R Edges to 9
+Node 6: A Edges to 9
+Node 7: G Edges to 9
+Node 8: E Edges to 9
+Node 9: SINK Edges to
+
+Node 0: SOURCE Edges to 1 2 3 4
+Node 1: ENG Edges to 6 7
+Node 2: SAA Edges to 5
+Node 3: PRR Edges to 8
+Node 4: EAE Edges to 6 7
+Node 5: S Edges to 9
+Node 6: E Edges to 9
+Node 7: E Edges to 9
+Node 8: P Edges to 9
+Node 9: SINK Edges to
+
+Node 0: SOURCE Edges to 1 2 3 4
+Node 1: ENG Edges to 6 7 8
+Node 2: SAA Edges to
+Node 3: PRR Edges to 5
+Node 4: EAE Edges to 6 7
+Node 5: P Edges to 9
+Node 6: E Edges to 9
+Node 7: E Edges to 9
+Node 8: N Edges to 9
+Node 9: SINK Edges to
+
+Node 0: SOURCE Edges to 1 2 3 4
+Node 1: ENG Edges to 5
+Node 2: SAA Edges to 6 7
+Node 3: PRR Edges to 8
+Node 4: EAE Edges to 6
+Node 5: G Edges to 9
+Node 6: A Edges to 9
+Node 7: S Edges to 9
+Node 8: P Edges to 9
+Node 9: SINK Edges to
+
+UNIX&gt; <b></b>
+</pre>
+
+<hr>
+<h2>Examples</h2>
+Dr. Plank has provided a few additional example files:
+<p>
+<b><a href="https://web.eecs.utk.edu/~semrich/cs302-24/assignments/Dice2.txt">Dice2.txt</a></b> and 
+<b><a href="https://web.eecs.utk.edu/~semrich/cs302-24/assignments/Words2.txt">Words2.txt</a></b> are small files to 
+test variable-sized dice:
+</p><p>
+</p><pre>UNIX&gt; <b>cat Dice2.txt</b>
+E
+PITED
+FOGCEF
+UNIX&gt; <b>cat Words2.txt</b>
+DOG
+PIG
+CAT
+DO
+TEE
+FEE
+UNIX&gt; <b>worddice Dice2.txt Words2.txt</b>
+Cannot spell DOG
+Cannot spell PIG
+Cannot spell CAT
+1,2: DO
+1,0,2: TEE
+2,0,1: FEE
+UNIX&gt; <b></b>
+</pre>
+<p>
+<b><a href="https://web.eecs.utk.edu/~semrich/cs302-24/assignments/Dice3.txt">Dice3.txt</a></b> is a file with six randomly 
+generated six-sided dice, and 
+<b><a href="https://web.eecs.utk.edu/~semrich/cs302-24/assignments/Words3.txt">Words3.txt</a></b> contains all words from 
+the Unix dictionary that have six letters.
+
+</p><pre>UNIX&gt; <b>cat Dice3.txt</b>
+IBTLCP
+DUAQEM
+DXLOTN
+WMIVQA
+NDCLOT
+JKCEMR
+UNIX&gt; <b>head Words3.txt</b>
+AARHUS
+ABACUS
+ABATER
+ABBOTT
+ABDUCT
+ABJECT
+ABLATE
+ABLAZE
+ABOARD
+ABOUND
+UNIX&gt; <b>worddice Dice3.txt Words3.txt | head</b>
+Cannot spell AARHUS
+Cannot spell ABACUS
+Cannot spell ABATER
+Cannot spell ABBOTT
+3,0,2,1,5,4: ABDUCT
+3,0,5,1,4,2: ABJECT
+1,0,2,3,4,5: ABLATE
+Cannot spell ABLAZE
+1,0,2,3,5,4: ABOARD
+Cannot spell ABOUND
+UNIX&gt; <b></b>
+</pre>
+
+<p>
+<b><a href="https://web.eecs.utk.edu/~semrich/cs302-24/assignments/Dice4.txt">Dice4.txt</a></b> is a file with eight randomly 
+generated dice with between three and seven sides.
+<b><a href="https://web.eecs.utk.edu/~semrich/cs302-24/assignments/Words4.txt">Words4.txt</a></b> contains all words from 
+the Unix dictionary that have eight letters.  As <b>worddice</b>
+shows, there are fewer successful spellings in this example:
+
+</p><pre>UNIX&gt; <b>cat Dice4.txt</b>
+FJZ
+BSYQ
+WYUTI
+SHTXVU
+PRAFYBH
+LWQCEI
+ENLJB
+BTJO
+UNIX&gt; <b>head Words4.txt</b>
+ABDICATE
+ABERDEEN
+ABERRANT
+ABERRATE
+ABETTING
+ABEYANCE
+ABHORRED
+ABLUTION
+ABNORMAL
+ABORNING
+UNIX&gt; <b>worddice Dice4.txt Words4.txt | head</b>
+Cannot spell ABDICATE
+Cannot spell ABERDEEN
+Cannot spell ABERRANT
+Cannot spell ABERRATE
+Cannot spell ABETTING
+Cannot spell ABEYANCE
+Cannot spell ABHORRED
+Cannot spell ABLUTION
+Cannot spell ABNORMAL
+Cannot spell ABORNING
+UNIX&gt; <b>worddice Dice4.txt Words4.txt | grep ':' | head</b>
+7,6,4,2,3,5,0,1: BEAUTIFY
+1,6,7,2,0,5,3,4: BLOWFISH
+7,5,3,6,0,2,1,4: BLUEFISH
+6,7,4,1,2,0,3,5: BOASTFUL
+5,0,4,3,1,2,7,6: EFFUSION
+0,4,6,2,5,7,3,1: FABULOUS
+0,6,4,7,5,2,3,1: FEROCITY
+0,5,1,7,2,3,4,6: FESTIVAL
+0,2,6,4,7,3,5,1: FIBROSIS
+0,6,4,2,3,5,1,7: FLAUTIST
+UNIX&gt; <b></b>
+</pre>
+
+<hr>
+<h3>The Gradescript</h3>
+
+<p>There will be a program called <b>grader</b> in the lab directory which is used to
+determine if your output is correct via matching ours.
+
+</p><h3>Additional requirements</h3>
+
+<p>When you are finished implementing your <code>worddice</code> implementation, each member must provide a <strong>brief summary</strong> 
+of their <strong>individual contributions</strong> to the project and answer the following question:
+
+</p><ol>
+<li>
+<p>What is <strong>complexity</strong> of your implementation?</p>
+<p>Explain this by describing which data structures you used and how you
+used them to implement network flow.</p>
+</li>
+</ol>
+
+<h2>Submission instructions</h2>
+
+<p>Please have one team member submit an archive of the following files 
+(not in a subdirectory of the archive) on Canvas to aid us in grading:
+
+</p><ol>
+<li>source files for worddice
+</li><li>Text document summarizing the student who is uploading's contributions and their answers to the required question
+</li><li>Makefile (even if you use the provided Makefile, please include it) 
+</li></ol>
+
+<p>If you work in a pair, the team member who isn’t submitting the above files should write up a separate document with their 
+contributions and answer and submit only that on Canvas.
+
+</p><h3>Rubric</h3>
+<p>Your project will be scored as follows:</p>
+
+<pre style="line-height: 125%"><span></span>+2    Code is well formatted, commented (inc. name, assignment, and overview), with reasonable variable names
++55   55 points * % of gradescripts passed
++3    Responses, inc. individual contributions
+</pre>
+
+
+</div>
+<div id="forest-ext-shadow-host"></div><div id="highlighter--hover-tools" style="display: none;">
+    <div id="highlighter--hover-tools--container">
+        <div class="highlighter--icon highlighter--icon-copy" title="Copy"></div>
+        <div class="highlighter--icon highlighter--icon-change-color" title="Change Color"></div>
+        <div class="highlighter--icon highlighter--icon-delete" title="Delete"></div>
+    </div>
+</div><div id="bettercanvas-reminders" style="display: flex;"></div></body></html>
